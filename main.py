@@ -1,3 +1,4 @@
+import hashlib #for passwerd
 import sqlite3
 import tkinter
 import tkinter as tk
@@ -42,7 +43,7 @@ class GUI:
         self.passEntry = tk.Entry(self.main, textvariable=self.pas, show='*')
         self.passEntry.place(x=170, y=90)
 
-        login = tk.Button(self.main, text="Login", width=10, command=self.login)
+        login = tk.Button(self.main, text="Login", width=10, command=self.goLogin)
         login.place(x=120, y=130)
         signup = tk.Button(self.main, text="Sign up", width=10, command=self.sign_up)
         signup.place(x=220, y=130)
@@ -59,5 +60,89 @@ class GUI:
 
 
 
+     # login (done)
+    def goLogin(self):
+        self.main.destroy()
+        self.login()
+# login window (done)
     def login(self):
-        print("hiii")
+
+        self.root = tk.Tk()
+        self.root.geometry('500x500')
+        self.root.title("KSU GolfLogin System")
+        self.root.configure(bg="light blue")
+
+        self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
+        self.label_0.place(x=90, y=53)
+
+        self.label_1L = tk.Label(self.root, text="ID :", width=20, font=("bold", 10))
+        self.label_1L.place(x=90, y=130)
+        self.entry_1L = tk.Entry(self.root)
+        self.entry_1L.place(x=240, y=130)
+
+        self.label_2P = tk.Label(self.root, text="Password :", width=20, font=("bold", 10))
+        self.label_2P.place(x=90, y=180)
+        self.entry_2P = tk.Entry(self.root,show='*')
+        self.entry_2P.place(x=240, y=180)
+
+        login = tk.Button(self.root, text="log in", command=self.logintodb)
+        login.place(x=240, y=300)
+        self.root.mainloop()
+# login Button
+    def logintodb(self):
+        self.validId()# to check validity id
+        self.validPass()  # to check validity pass
+        id1 = str(self.entry_1L.get())
+        countid = 0
+        for x in id1:
+            countid += 1
+        if countid == 6: #go to admin window
+            self.admin()
+        elif countid == 10:#go to user window
+            self.user()
+
+    # validate ID (done)
+    def validId( self):
+        try:
+            digit1 = int(self.entry_1L.get())
+        except ValueError:
+            tkinter.messagebox.showinfo('Erorr', 'ID should be 6 or 10 digits')
+        id1 = str(self.entry_1L.get())
+        countid = 0
+        for x in id1:
+            countid += 1
+        if countid != 6 and countid != 10:
+            tkinter.messagebox.showinfo('Erorr', 'ID should be 6 or 10 digit')
+    # valid pass (not done)
+    def validPass(self):
+        conn = sqlite3.connect('KSUGolfCarts.db')
+        temp = False
+        passwerd = str(self.entry_2P.get())
+        result = hashlib.sha256(passwerd.encode()).hexdigest()
+        check=c.execute('SELECT password FROM PERSON ')
+        print(check)
+        for row in check:
+            if row[0] == id:
+                temp = True
+        if temp !=True :
+            messagebox.showinfo("Error", "Invalid password ")
+
+    def admin(self):
+        print()
+    def user(self):
+        print()
+
+
+#to see the test
+conn = sqlite3.connect('KSUGolfCarts.db')
+c = conn.cursor()
+c.execute("Select * from PERSON")
+print(c.fetchall())
+gui=GUI()
+conn.commit()
+print("************")
+c.execute("Select * from PERSON")
+print(c.fetchall())
+conn.commit()
+conn.close()
+
