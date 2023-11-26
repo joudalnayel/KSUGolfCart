@@ -50,15 +50,15 @@ class GUI:
         self.entry_2 = tk.Entry(self.root)
         self.entry_2.place(x=240, y=180)
         # User class
-        self.labelFS = tk.Label(self.root, text="Your Class")
-        self.labelFS.place(x=140, y=230)
+        self.labelFS = tk.Label(self.root, text="Your Class", width=20, font=("bold", 10))
+        self.labelFS.place(x=90, y=230)
         Class = ('Student', 'Faculty','Employee')
         selected_class = tk.StringVar()
-        self.cbs = ttk.Combobox(self.root, textvariable=selected_class, width=8)
+        self.cbs = ttk.Combobox(self.root, textvariable=selected_class, width=17)
         self.cbs['values'] = Class
         self.cbs.place(x=240, y=230)
-        # StudentID label
-        self.label_6 = tk.Label(self.root, text="StudentID:", width=20, font=("bold", 10))
+        # ID label
+        self.label_6 = tk.Label(self.root, text="ID:", width=20, font=("bold", 10))
         self.label_6.place(x=90, y=280)
         self.entry_3 = tk.Entry(self.root)
         self.entry_3.place(x=240, y=280)
@@ -79,7 +79,7 @@ class GUI:
         self.entry_6.place(x=240, y=420)
         # Submit button
         self.SubmetButton = tk.Button(self.root, text='Submit', width=20, bg='brown', fg='white',
-                                      command=self.Submit()).place(x=180, y=450)
+                                      command=self.Submit).place(x=180, y=450)
 
         self.SWallet = tk.Button(self.root, text='Login', width=20, bg='brown', fg='white',
                                  command=self.goLogin).place(x=180, y=490)
@@ -88,7 +88,6 @@ class GUI:
         print("registration form  seccussfully created...")
 
         self.root.mainloop()
-
     def Submit(self):
         try:
             conn = sqlite3.connect('KSUGolfCarts.db')
@@ -230,7 +229,7 @@ class GUI:
         check=c.execute('SELECT password FROM PERSON ')
         print(check)
         for row in check:
-            if row[0] == id:
+            if row[0] == result:
                 temp = True
         if temp !=True :
             messagebox.showinfo("Error", "Invalid password ")
@@ -253,4 +252,3 @@ c.execute("Select * from PERSON")
 print(c.fetchall())
 conn.commit()
 conn.close()
-
