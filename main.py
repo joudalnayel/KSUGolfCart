@@ -173,7 +173,7 @@ class GUI:
         self.login()
 # login window (done)
     def login(self):
-        self.root.destroy()
+        
         self.root = tk.Tk()
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
