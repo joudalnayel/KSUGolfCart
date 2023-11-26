@@ -190,3 +190,13 @@ print(c.fetchall())
 conn.commit()
 conn.close()
 
+
+# Gender
+        self.labelFS = tk.LabelFrame(self.mainFrame, text="Your Gender")
+        self.frameS = tk.Frame(self.labelFS)
+        self.labelTop0 = tk.Label(self.frameS, text='Gender')
+        six = ('Female', 'Male')
+        selected_six = tk.StringVar()
+        self.cbs = ttk.Combobox(self.frameS, textvariable=selected_six, width=8)
+        self.cbs['values'] = six
+
