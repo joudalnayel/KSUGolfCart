@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, END, filedialog as fd
 import csv
 import re
+import datetime
 
 #dataBase:
 KSUdb = sqlite3.connect('KSUGolfCarts.db')
@@ -25,96 +26,159 @@ KSUdb.close()
 #gui
 class GUI:
     def __init__(self):
-        self.main = tk.Tk()
-        self.main.title("KSU GolfCartsn System")
-        self.main.geometry('400x200')
-        self.main.configure(bg="light blue")
-        tk.Label(self.main,text="Welcom to ksu Golf Cartsn system!")
 
-        self.ID = tk.StringVar()
-        self.pas = tk.StringVar()
-        self.idLabel = tk.Label(self.main, text="Enter your ID :", width=20, font=("bold", 10))
-        self.idLabel.place(x=0, y=60)
-        self.idEntry = tk.Entry(self.main, textvariable=self.ID)
-        self.idEntry.place(x=170, y=60)
+        # SignUp
+        # Create window
+        self.root = tk.Tk()
+        self.root.title("KSU GolfCartsn System")
+        self.root.geometry('500x600')
+        self.root.configure(bg="light blue")
+        tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
 
-        self.passLabel = tk.Label(self.main, text="Password :", width=20, font=("bold", 10))
-        self.passLabel.place(x=0, y=90)
-        self.passEntry = tk.Entry(self.main, textvariable=self.pas, show='*')
-        self.passEntry.place(x=170, y=90)
+        # Sign up label
+        self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
+        self.label_0.place(x=90, y=53)
+        # First name label
+        self.label_1 = tk.Label(self.root, text="First Name:", width=20, font=("bold", 10))
+        self.label_1.place(x=90, y=130)
+        self.entry_1 = tk.Entry(self.root)
+        self.entry_1.place(x=240, y=130)
+        # Last name label
+        self.label_2 = tk.Label(self.root, text="Last Name", width=20, font=("bold", 10))
+        self.label_2.place(x=90, y=180)
+        self.entry_2 = tk.Entry(self.root)
+        self.entry_2.place(x=240, y=180)
+        # User class
+        self.labelFS = tk.Label(self.root, text="Your Class")
+        self.labelFS.place(x=140, y=230)
+        Class = ('Student', 'Faculty','Employee')
+        selected_class = tk.StringVar()
+        self.cbs = ttk.Combobox(self.root, textvariable=selected_class, width=8)
+        self.cbs['values'] = Class
+        self.cbs.place(x=240, y=230)
+        # StudentID label
+        self.label_6 = tk.Label(self.root, text="StudentID:", width=20, font=("bold", 10))
+        self.label_6.place(x=90, y=280)
+        self.entry_3 = tk.Entry(self.root)
+        self.entry_3.place(x=240, y=280)
+        # Password label
+        self.label_4 = tk.Label(self.root, text="Password:", width=20, font=("bold", 10))
+        self.label_4.place(x=90, y=330)
+        self.entry_4 = tk.Entry(self.root)
+        self.entry_4.place(x=240, y=330)
+        # Email label
+        self.label_5 = tk.Label(self.root, text="Email address:", width=20, font=("bold", 10))
+        self.label_5.place(x=90, y=380)
+        self.entry_5 = tk.Entry(self.root)
+        self.entry_5.place(x=240, y=380)
+        # Phone number label
+        self.label_6 = tk.Label(self.root, text="Phone number:", width=20, font=("bold", 10))
+        self.label_6.place(x=90, y=420)
+        self.entry_6 = tk.Entry(self.root)
+        self.entry_6.place(x=240, y=420)
+        # Submit button
+        self.SubmetButton = tk.Button(self.root, text='Submit', width=20, bg='brown', fg='white',
+                                      command=self.Submit()).place(x=180, y=450)
 
-        login = tk.Button(self.main, text="Login", width=10, command=self.goLogin)
-        login.place(x=120, y=130)
-        signup = tk.Button(self.main, text="Sign up", width=10, command=self.sign_up)
-        signup.place(x=220, y=130)
-        self.main.mainloop()
+        self.SWallet = tk.Button(self.root, text='Login', width=20, bg='brown', fg='white',
+                                 command=self.goLogin).place(x=180, y=490)
+        # it is use for display the registration form on the window
 
+        print("registration form  seccussfully created...")
 
-        def SignUp(self) :
-        print("Hi, Sign up!")
-        # ID & NAME
-        self.mainFrame = tk.Frame(self.mainW)
+        self.root.mainloop()
 
-        self.lable1 = tk.LabelFrame(self.mainFrame, text='PERSONAL INFORMATION')
-        self.frame1 = tk.Frame(self.lable1)
+    def Submit(self):
+        try:
+            conn = sqlite3.connect('KSUGolfCarts.db')
+            # validate password
+            password = str(self.entry_4.get())
+            reg = "^[A-Za-z0-9]{6,100}$"
+            pat = re.compile(reg)
+            x = re.search(pat, password)
+            if not x:
+                password = ''
+                messagebox.showinfo("password format error!",
+                                    "Re-enter a password number properly\rthat consists at least of 6 digits or letters")
+            # first &last Name
+            firstname = str(self.entry_1.get())
+            lastname = str(self.entry_2.get())
+            Class = str(self.selected_class.get())
+            #selected class
+            if self.selected_class.get()=='Student':
+                # student id
+                ID = str(self.entry_3.get())
+                reg = "^[0-9]{10}$"
+                pat = re.compile(reg)
+                x = re.search(pat,ID)
+            # validate studentID
+                if not x:
+                    StudentID = ''
+                    messagebox.showinfo("ID Number error!", "Re-enter an ID number properly\rthat consists of 10 digits")
+            else:
+                ID = str(self.entry_3.get())
+                reg = "^[0-9]{6}$"
+                pat = re.compile(reg)
+                x = re.search(pat, ID)
+                # validate ID
+                if not x:
+                    ID = ''
+                    messagebox.showinfo("ID Number error!",
+                                        "Re-enter an ID number properly\rthat consists of 6 digits")
 
-        self.lableTopFName = tk.Label(self.frame1, text='First name')
-        self.cbFN = tk.Entry(self.frame1, width='10')
+            # validate phone
+            phoneNum = str(self.entry_6.get())
+            reg2 = "^(05)[0-9]{8}$"
+            pat2 = re.compile(reg2)
+            y = re.search(pat2, phoneNum)
+            if not y:
+                phoneNum = ''
+                messagebox.showinfo("Phone Number error!", "Re-enter an phone number properly\rthat "
+                                                           "consists of 10 digits and starts with \'05\'")
+                # validate email
+            email = str(self.entry_5.get())
+            reg = "^([a-zA-Z0-9\._-]+){8}(@ksu\.edu\.sa)$"
+            pat = re.compile(reg)
+            z = re.search(pat, email)
+            if not z:
+                email = ''
+                messagebox.showinfo("Email  error!", "Re-enter Email properly\rthat "
+                                                     "it should xxxxxxxx@ksu.edu.sa ")
+            # insert,Check for doublaction
+            found_id = c.execute(f"SELECT SID_Number FROM PERSON WHERE SID_Number = {StudentID}||{ID}")
+            if len(found_id.fetchall()) == 0:
+                sql = """INSERT INTO PERSON VALUES('{}','{}','{}','{}','{}','{}','{}','{}')
+                """.format(firstname, lastname,Class, ID, password, email, phoneNum,
+                           datetime.datetime.now())
+                c.execute(sql)
+                conn.commit()
 
-        self.lableTopLName = tk.Label(self.frame1, text='Last name')
-        self.cbLN = tk.Entry(self.frame1, width='10')
+                # c.execute("Select * from StudentInfo")
+                # print(c.fetchall())
+            else:
+                ID = ''
+                messagebox.showinfo("ID already exist", "Reenter the correct ID again,"
+                                                        "\rplease review your information and enter it correctly")
+            conn.close()
+        except sqlite3.Error:
+            messagebox.showinfo("database error", "DataBase ERROR")
 
-        # class
-        self.label2 = tk.LabelFrame(self.mainFrame, text="User Class")
-        self.frame2 = tk.Frame(self.label2)
+        except:
+            messagebox.showinfo("ADD MISSION FAILED", "Due to incorrect or incompelte inputs,"
+                                                      "\rplease review your information and enter it correctly")
 
-        self.labelTop0 = tk.Label(self.frame2, text='your class')
-        cla = ('Student', 'Faculty', 'Employee')
-        selected_cla = tk.StringVar()
-
-        self.cbs = ttk.Combobox(self.frame2, textvariable=selected_cla, width=8)
-        self.cbs['values'] = cla
-
-        # ID
-        self.label3 = tk.LabelFrame(self.mainFrame, text="User ID")
-        self.frame3 = tk.Frame(self.label2)
-
-        self.labelTopID = tk.Label(self.frame3, text='ID')
-        self.cbID = tk.Entry(self.frame3, width='15')
-
-        # pass
-        self.label4 = tk.LabelFrame(self.mainFrame, text="Password")
-        self.frame4 = tk.Frame(self.label4)
-        self.labelToppass = tk.Label(self.frame4, text='')
-        self.cb4 = tk.Entry(self.frame4, width='15')
-
-        # email
-        self.label5 = tk.LabelFrame(self.mainFrame, text="Email")
-        self.frame5 = tk.Frame(self.label5)
-        self.labelTopem = tk.Label(self.frame5, text='')
-        self.cb5 = tk.Entry(self.frame5, width='15')
-
-        # PHONE NUMBER
-        self.labelFP = tk.LabelFrame(self.mainFrame, text="Phone")
-        self.frameP = tk.Frame(self.labelFP)
-        self.labelTop4 = tk.Label(self.frameP, text='Number')
-        self.cb4 = tk.Entry(self.frameP, width='15')
-
-
-
-
-
-     # login (done)
+# login (done)
     def goLogin(self):
-        self.main.destroy()
+        self.root.destroy()
         self.login()
 # login window (done)
     def login(self):
-
+        self.root.destroy()
         self.root = tk.Tk()
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
         self.root.configure(bg="light blue")
+        self.root.iconphoto(False,tk.PhotoImage(file='logo.jpg'))
 
         self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -189,14 +253,4 @@ c.execute("Select * from PERSON")
 print(c.fetchall())
 conn.commit()
 conn.close()
-
-
-# Gender
-        self.labelFS = tk.LabelFrame(self.mainFrame, text="Your Gender")
-        self.frameS = tk.Frame(self.labelFS)
-        self.labelTop0 = tk.Label(self.frameS, text='Gender')
-        six = ('Female', 'Male')
-        selected_six = tk.StringVar()
-        self.cbs = ttk.Combobox(self.frameS, textvariable=selected_six, width=8)
-        self.cbs['values'] = six
 
