@@ -50,11 +50,55 @@ class GUI:
         self.main.mainloop()
 
 
+        def SignUp(self) :
+        print("Hi, Sign up!")
+        # ID & NAME
+        self.mainFrame = tk.Frame(self.mainW)
 
-    def sign_up(self):
-        self.root = tk.Tk()
-        self.root.geometry('400x350')
-        self.root.title("Student Registration")
+        self.lable1 = tk.LabelFrame(self.mainFrame, text='PERSONAL INFORMATION')
+        self.frame1 = tk.Frame(self.lable1)
+
+        self.lableTopFName = tk.Label(self.frame1, text='First name')
+        self.cbFN = tk.Entry(self.frame1, width='10')
+
+        self.lableTopLName = tk.Label(self.frame1, text='Last name')
+        self.cbLN = tk.Entry(self.frame1, width='10')
+
+        # class
+        self.label2 = tk.LabelFrame(self.mainFrame, text="User Class")
+        self.frame2 = tk.Frame(self.label2)
+
+        self.labelTop0 = tk.Label(self.frame2, text='your class')
+        cla = ('Student', 'Faculty', 'Employee')
+        selected_cla = tk.StringVar()
+
+        self.cbs = ttk.Combobox(self.frame2, textvariable=selected_cla, width=8)
+        self.cbs['values'] = cla
+
+        # ID
+        self.label3 = tk.LabelFrame(self.mainFrame, text="User ID")
+        self.frame3 = tk.Frame(self.label2)
+
+        self.labelTopID = tk.Label(self.frame3, text='ID')
+        self.cbID = tk.Entry(self.frame3, width='15')
+
+        # pass
+        self.label4 = tk.LabelFrame(self.mainFrame, text="Password")
+        self.frame4 = tk.Frame(self.label4)
+        self.labelToppass = tk.Label(self.frame4, text='')
+        self.cb4 = tk.Entry(self.frame4, width='15')
+
+        # email
+        self.label5 = tk.LabelFrame(self.mainFrame, text="Email")
+        self.frame5 = tk.Frame(self.label5)
+        self.labelTopem = tk.Label(self.frame5, text='')
+        self.cb5 = tk.Entry(self.frame5, width='15')
+
+        # PHONE NUMBER
+        self.labelFP = tk.LabelFrame(self.mainFrame, text="Phone")
+        self.frameP = tk.Frame(self.labelFP)
+        self.labelTop4 = tk.Label(self.frameP, text='Number')
+        self.cb4 = tk.Entry(self.frameP, width='15')
 
 
 
