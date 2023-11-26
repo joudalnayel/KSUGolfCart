@@ -34,6 +34,7 @@ class GUI:
         self.root.geometry('500x600')
         self.root.configure(bg="light blue")
         tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
@@ -173,12 +174,11 @@ class GUI:
         self.login()
 # login window (done)
     def login(self):
-        
         self.root = tk.Tk()
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
         self.root.configure(bg="light blue")
-        self.root.iconphoto(False,tk.PhotoImage(file='logo.jpg'))
+        self.root.iconphoto(False,tk.PhotoImage(file='logo2'))
 
         self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
