@@ -53,8 +53,8 @@ class GUI:
         self.labelFS = tk.Label(self.root, text="Your Class", width=20, font=("bold", 10))
         self.labelFS.place(x=90, y=230)
         Class = ('Student', 'Faculty','Employee')
-        selected_class = tk.StringVar()
-        self.cbs = ttk.Combobox(self.root, textvariable=selected_class, width=17)
+        self.selected_class = tk.StringVar()
+        self.cbs = ttk.Combobox(self.root, textvariable=self.selected_class, width=17)
         self.cbs['values'] = Class
         self.cbs.place(x=240, y=230)
         # ID label
@@ -113,7 +113,7 @@ class GUI:
                 x = re.search(pat,ID)
             # validate studentID
                 if not x:
-                    StudentID = ''
+                    ID = ''
                     messagebox.showinfo("ID Number error!", "Re-enter an ID number properly\rthat consists of 10 digits")
             else:
                 ID = str(self.entry_3.get())
@@ -145,11 +145,11 @@ class GUI:
                 messagebox.showinfo("Email  error!", "Re-enter Email properly\rthat "
                                                      "it should xxxxxxxx@ksu.edu.sa ")
             # insert,Check for doublaction
-            found_id = c.execute(f"SELECT SID_Number FROM PERSON WHERE SID_Number = {StudentID}||{ID}")
+            found_id = c.execute(f"SELECT SID_Number FROM PERSON WHERE SID_Number = {ID}")
+            password= hashlib.sha256(password.encode()).hexdigest()
             if len(found_id.fetchall()) == 0:
-                sql = """INSERT INTO PERSON VALUES('{}','{}','{}','{}','{}','{}','{}','{}')
-                """.format(firstname, lastname,Class, ID, password, email, phoneNum,
-                           datetime.datetime.now())
+                sql = """INSERT INTO PERSON VALUES('{}','{}','{}','{}','{}','{}','{}')
+                """.format(firstname, lastname,Class, ID, password, email, phoneNum,)
                 c.execute(sql)
                 conn.commit()
 
@@ -227,7 +227,6 @@ class GUI:
         passwerd = str(self.entry_2P.get())
         result = hashlib.sha256(passwerd.encode()).hexdigest()
         check=c.execute('SELECT password FROM PERSON ')
-        print(check)
         for row in check:
             if row[0] == result:
                 temp = True
@@ -252,3 +251,4 @@ c.execute("Select * from PERSON")
 print(c.fetchall())
 conn.commit()
 conn.close()
+
