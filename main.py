@@ -46,17 +46,17 @@ class GUI:
 
         # SignUp
         # Create window
-        self.root = tk.Tk()
-        self.root.title("KSU GolfCartsn System")
-        self.root.geometry('500x600')
-        self.root.configure(bg="light blue")
-        tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
         self.Signup()
         print("registration form  seccussfully created...")
         self.root.mainloop()
 
     def Signup(self):
+        self.root = tk.Tk()
+        self.root.title("KSU GolfCartsn System")
+        self.root.geometry('500x600')
+        self.root.configure(bg="light blue")
+        tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
+
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -255,11 +255,11 @@ class GUI:
             messagebox.showinfo("Error", "Invalid password ")
 
     def submita(self):
+        self.root.destroy()
         self.root = tk.Tk()
         self.root.title("KSU Golf Carts System")
         self.root.geometry('500x500')
         self.root.configure(bg='light blue')
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         frame1 = tk.Frame(self.root)
         frame1.place(x=90, y=6)
@@ -279,7 +279,7 @@ class GUI:
         submit_button = tk.Button(frame1, text="Submit", command=self.submittt)
         submit_button.pack()
 
-        logout_button = tk.Button(frame1, text="Logout", command=self.Signup)
+        logout_button = tk.Button(frame1, text="Logout", command=self.logout)
         logout_button.pack()
 
         backup_button = tk.Button(frame1, text="Backup", command=self.backup)
@@ -296,11 +296,15 @@ class GUI:
 
         plate_number = self.plate_entry.get()
         college = str(self.college_entry.get())
+        with KSUdb:
+            KSUdb.execute(
+                "INSERT OR IGNORE INTO GulfCarts (plate_number, college) VALUES(?,?)",
+                (plate_number, college))
         print("Sending data to database: plate_number= ", plate_number, "college= ", college)
 
     def logout(self):
         self.root.destroy()
-        # sing_up()
+        self.Signup()
         print("Returning to sign-up window")
 
     def backup(self):
@@ -324,6 +328,9 @@ conn = sqlite3.connect('KSUGolfCarts.db')
 c = conn.cursor()
 c.execute("Select * from PERSON")
 print(c.fetchall())
+c.execute("Select * from GulfCarts")
+print(c.fetchall())
 gui=GUI()
 conn.commit()
 conn.close()
+
