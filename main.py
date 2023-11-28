@@ -7,6 +7,9 @@ import csv
 import re
 from datetime import datetime, timedelta
 import datetime
+import logging
+from datetime import datetime
+
 
 #dataBase:
 KSUdb = sqlite3.connect('KSUGolfCarts.db')
@@ -32,10 +35,10 @@ KSUdb.execute('''
     CREATE TABLE IF NOT EXISTS Reservations (
         UserID        CHAR(10)     NOT NULL,
         Cart          CHAR(20)     NOT NULL,
-        StartDate     DATE         NOT NULL,
-        StartTime     TIME         NOT NULL,
-        EndDate       DATE         NOT NULL,
-        EndTime       TIME         NOT NULL,
+        StartDate     CHAR(10)         NOT NULL,
+        StartTime     CHAR(10)         NOT NULL,
+        EndDate       CHAR(10)         NOT NULL,
+        EndTime       CHAR(10)         NOT NULL,
         PRIMARY KEY (UserID, StartDate, StartTime)
     );
 ''')
@@ -308,7 +311,6 @@ class GUI:
         # plate_number = plate_entry.get()
         # college = college_entry.get()
         # Send information to the central database
-
         plate_number = self.plate_entry.get()
         college = str(self.college_entry.get())
         with KSUdb:
@@ -400,16 +402,27 @@ class GUI:
         logout_button = tk.Button(self.view_tab, text="Logout", command=self.userWindow.destroy)
         logout_button.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
 
+
     def load_cart_list(self):
-        # Dummy data for cart list, replace with actual data
-        carts = ["Cart 001 gate1", "Cart 002 gate 2", "Cart 003 gate 4"]
+
+        with KSUdb:
+            plate_numbers = KSUdb.execute("SELECT plate_number FROM GulfCarts").fetchall()
+            colleges = KSUdb.execute("SELECT  college FROM GulfCarts").fetchall()
+
+            carts = [f"{plate[0]} - {college[0]}" for plate, college in zip(plate_numbers, colleges)]
+
+        # Clear existing items in the listbox
+        self.cart_listbox.delete(0, tk.END)
+        # Populate the listbox) with the retrieved carts
         for cart in carts:
             self.cart_listbox.insert(tk.END, cart)
+
 
     def reserve_cart(self):
         selected_cart = self.cart_listbox.get(tk.ACTIVE)
         start_time = self.start_entry.get()
         end_time = self.end_entry.get()
+
 
         # Placeholder logic, replace with actual reservation logic
         if not selected_cart or not start_time or not end_time:
@@ -429,6 +442,22 @@ class GUI:
                     "end_time": end_time
                 })
                 messagebox.showinfo("Success", "Cart reserved successfully.")
+
+
+                # Convert date strings to datetime objects
+                start_datetime = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+                end_datetime = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
+                entry_1d=str(self.entry_1L.get())
+
+                # Now you can use start_datetime and end_datetime in your SQL query
+                with KSUdb:
+                    KSUdb.execute(
+                        "INSERT OR IGNORE INTO Reservations (UserID, Cart, StartDate, StartTime, EndDate, EndTime) VALUES(?,?,?,?,?,?)",
+                        (
+                        entry_1d, selected_cart, str(start_datetime.date()), str(start_datetime.time()), str(end_datetime.date()),
+                        str(end_datetime.time()))
+                    )
+
             else:
                 messagebox.showerror("Error", "Cart is not available during the specified time.")
 
@@ -453,7 +482,34 @@ class GUI:
     def check_cart_availability(self, cart, start_time, end_time):
         # Placeholder: Check cart availability
         # Replace with actual logic
-        return True
+            try:
+                conn = sqlite3.connect('KSUGolfCarts.db')
+                c = conn.cursor()
+
+                # Check if there are any reservations for the selected cart during the specified time range
+                c.execute('''
+                    SELECT * FROM Reservations
+                    WHERE Cart = ? AND (
+                        (StartDate <= ? AND EndDate >= ?)
+                        OR (StartDate <= ? AND EndDate >= ?)
+                        OR (StartDate >= ? AND EndDate <= ?)
+                    )
+                ''', (cart, start_time, start_time, end_time, end_time, start_time, end_time))
+
+                reservations = c.fetchall()
+
+                if reservations:
+                    messagebox.showinfo("Cart Not Available",
+                                        "The selected cart is not available during the specified time.")
+                    return False
+                else:
+                    return True
+            except sqlite3.Error as e:
+                messagebox.showerror("Database Error", f"Error reading data from the database: {str(e)}")
+                return False
+            finally:
+                conn.close()
+            return True
 
     def view_reservations(self):
         self.reservations_listbox.delete(0, tk.END)
@@ -477,6 +533,8 @@ c = conn.cursor()
 c.execute("Select * from PERSON")
 print(c.fetchall())
 c.execute("Select * from GulfCarts")
+print(c.fetchall())
+c.execute("Select * from Reservations")
 print(c.fetchall())
 gui=GUI()
 conn.commit()
