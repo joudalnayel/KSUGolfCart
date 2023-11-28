@@ -447,7 +447,7 @@ class GUI:
                 # Convert date strings to datetime objects
                 start_datetime = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
                 end_datetime = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
-                entry_1d=str(self.entry_1L.get())
+                entry_1d=str(self.userid)
 
                 # Now you can use start_datetime and end_datetime in your SQL query
                 with KSUdb:
@@ -485,16 +485,20 @@ class GUI:
             try:
                 conn = sqlite3.connect('KSUGolfCarts.db')
                 c = conn.cursor()
+                start_datetime = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+                end_datetime = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
 
                 # Check if there are any reservations for the selected cart during the specified time range
                 c.execute('''
-                    SELECT * FROM Reservations
-                    WHERE Cart = ? AND (
-                        (StartDate <= ? AND EndDate >= ?)
-                        OR (StartDate <= ? AND EndDate >= ?)
-                        OR (StartDate >= ? AND EndDate <= ?)
-                    )
-                ''', (cart, start_time, start_time, end_time, end_time, start_time, end_time))
+                            SELECT * FROM Reservations
+                            WHERE Cart = ? AND (
+                                (StartDate <= ? AND EndDate >= ?)
+                                OR (StartDate <= ? AND EndDate >= ?)
+                                OR (StartDate >= ? AND StartDate <= ? AND EndDate >= ?)
+                            )
+                                ''', (cart, str(start_datetime.date()), str(start_datetime.time()), str(end_datetime.date()),str(end_datetime.time()), str(start_datetime.date()),  # StartDate
+                                    str(end_datetime.date()),str(start_datetime.time()),  # EndDate
+                                         ))
 
                 reservations = c.fetchall()
 
@@ -504,12 +508,13 @@ class GUI:
                     return False
                 else:
                     return True
+
             except sqlite3.Error as e:
                 messagebox.showerror("Database Error", f"Error reading data from the database: {str(e)}")
                 return False
             finally:
                 conn.close()
-            return True
+
 
     def view_reservations(self):
         self.reservations_listbox.delete(0, tk.END)
@@ -539,4 +544,3 @@ print(c.fetchall())
 gui=GUI()
 conn.commit()
 conn.close()
-
