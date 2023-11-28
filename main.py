@@ -19,10 +19,27 @@ password      CHAR (15)    NOT NULL,
 EmailAdress   CHAR (30)    NOT NULL,
 Phone_Number  CHAR(15)     NOT NULL
 ); ''')
+KSUdb.commit()
+KSUdb.execute('''
+    CREATE TABLE IF NOT EXISTS GulfCarts (
+        plate_number VARCHAR(20) PRIMARY KEY,
+        college CHAR(30) NOT NULL
+    )
+''')
+KSUdb.commit()
+FirstName_admin = 'Areej'
+LastName_Admin = 'Saad'
+AdminClass='Employee'
+ID_Admin = '123456'
+Password = '000qqq'
+password = hashlib.sha256(Password.encode()).hexdigest()
+Email = 'Areej@ksu.edu.sa'
+Phone_Number = '0512345678'
+with KSUdb:
+    KSUdb.execute("INSERT OR IGNORE INTO PERSON (FirstName, LastName, user_class, SID_Number, password, EmailAdress, Phone_Number) VALUES(?,?,?,?,?,?,?)",
+                  (FirstName_admin, LastName_Admin, AdminClass, ID_Admin, password, Email, Phone_Number))
 
 KSUdb.commit()
-KSUdb.close()
-
 #gui
 class GUI:
     def __init__(self):
@@ -35,7 +52,11 @@ class GUI:
         self.root.configure(bg="light blue")
         tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
         self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.Signup()
+        print("registration form  seccussfully created...")
+        self.root.mainloop()
 
+    def Signup(self):
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -52,7 +73,7 @@ class GUI:
         # User class
         self.labelFS = tk.Label(self.root, text="Your Class", width=20, font=("bold", 10))
         self.labelFS.place(x=90, y=230)
-        Class = ('Student', 'Faculty','Employee')
+        Class = ('Student', 'Faculty', 'Employee')
         self.selected_class = tk.StringVar()
         self.cbs = ttk.Combobox(self.root, textvariable=self.selected_class, width=17)
         self.cbs['values'] = Class
@@ -204,7 +225,7 @@ class GUI:
         for x in id1:
             countid += 1
         if countid == 6: #go to admin window
-            self.admin()
+            self.submita()
         elif countid == 10:#go to user window
             self.user()
 
@@ -220,7 +241,7 @@ class GUI:
             countid += 1
         if countid != 6 and countid != 10:
             tkinter.messagebox.showinfo('Erorr', 'ID should be 6 or 10 digit')
-    # valid pass (not done)
+    # valid pass ( done)
     def validPass(self):
         conn = sqlite3.connect('KSUGolfCarts.db')
         temp = False
@@ -233,8 +254,67 @@ class GUI:
         if temp !=True :
             messagebox.showinfo("Error", "Invalid password ")
 
-    def admin(self):
-        print()
+    def submita(self):
+        self.root = tk.Tk()
+        self.root.title("KSU Golf Carts System")
+        self.root.geometry('500x500')
+        self.root.configure(bg='light blue')
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+
+        frame1 = tk.Frame(self.root)
+        frame1.place(x=90, y=6)
+
+        plateNum_label = tk.Label(frame1, text="Enter golf cart plate number: ", width=20, font=("bold", 10))
+        plateNum_label.pack()
+        self.plate_entry = tk.Entry(frame1)
+        self.plate_entry.configure(width=15)
+        self.plate_entry.pack()
+
+        college_label = tk.Label(frame1, text="Enter golf cart's college:", width=20, font=("bold", 10))
+        college_label.pack()
+        self.college_entry = tk.Entry(frame1)
+        self.college_entry.configure(width=15)
+        self.college_entry.pack()
+
+        submit_button = tk.Button(frame1, text="Submit", command=self.submittt)
+        submit_button.pack()
+
+        logout_button = tk.Button(frame1, text="Logout", command=self.Signup)
+        logout_button.pack()
+
+        backup_button = tk.Button(frame1, text="Backup", command=self.backup)
+        backup_button.pack()
+
+        frame1.pack()
+
+        self.root.mainloop()
+
+    def submittt(self):
+        # plate_number = plate_entry.get()
+        # college = college_entry.get()
+        # Send information to the central database
+
+        plate_number = self.plate_entry.get()
+        college = str(self.college_entry.get())
+        print("Sending data to database: plate_number= ", plate_number, "college= ", college)
+
+    def logout(self):
+        self.root.destroy()
+        # sing_up()
+        print("Returning to sign-up window")
+
+    def backup(self):
+        # Backup all information of the central database into a CSV file format
+        conn = sqlite3.connect('KSUGolfCarts.db')
+        file = open('GulfCartDB.csv', "w", newline="")
+        csvwiter = csv.writer(file)
+        cursor = conn.execute("SELECT * from PERSON")
+        fields = "First_Name,Last_Name,Class,ID,Password,Email,Phone_Number"
+        csvwiter.writerow(fields.split(","))
+        for row in cursor:
+            csvwiter.writerow(row)
+        print("Backing up data to CSV file")
+
     def user(self):
         print()
 
@@ -246,9 +326,4 @@ c.execute("Select * from PERSON")
 print(c.fetchall())
 gui=GUI()
 conn.commit()
-print("************")
-c.execute("Select * from PERSON")
-print(c.fetchall())
-conn.commit()
 conn.close()
-
