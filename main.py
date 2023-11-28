@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, END, filedialog as fd
 import csv
 import re
+from datetime import datetime, timedelta
 import datetime
 
 #dataBase:
@@ -25,6 +26,18 @@ KSUdb.execute('''
         plate_number VARCHAR(20) PRIMARY KEY,
         college CHAR(30) NOT NULL
     )
+''')
+# Create the table for storing user reservations
+KSUdb.execute('''
+    CREATE TABLE IF NOT EXISTS Reservations (
+        UserID        CHAR(10)     NOT NULL,
+        Cart          CHAR(20)     NOT NULL,
+        StartDate     DATE         NOT NULL,
+        StartTime     TIME         NOT NULL,
+        EndDate       DATE         NOT NULL,
+        EndTime       TIME         NOT NULL,
+        PRIMARY KEY (UserID, StartDate, StartTime)
+    );
 ''')
 KSUdb.commit()
 FirstName_admin = 'Areej'
@@ -227,7 +240,7 @@ class GUI:
         if countid == 6: #go to admin window
             self.submita()
         elif countid == 10:#go to user window
-            self.user()
+            self.user(id1)
 
     # validate ID (done)
     def validId( self):
@@ -327,8 +340,135 @@ class GUI:
             csvwiter.writerow(row)
         print("Backing up data to CSV file")
 
-    def user(self):
-        print()
+    def user(self, userid):
+        self.root.destroy()
+        self.userid = userid
+        self.reservations = []  # Store user reservations
+
+        self.userWindow = tk.Tk()
+        self.userWindow.title("User Window")
+        self.userWindow.configure(bg='light blue')
+
+        self.notebook = ttk.Notebook(self.userWindow)
+        self.reserve_tab = ttk.Frame(self.notebook)
+        self.view_tab = ttk.Frame(self.notebook)
+
+        self.notebook.add(self.reserve_tab, text='Reserve a Cart')
+        self.notebook.add(self.view_tab, text='View my Reservations')
+
+        self.setup_reserve_tab()
+        self.setup_view_tab()
+
+        self.notebook.pack(expand=1, fill='both')
+        self.userWindow.mainloop()
+
+    def setup_reserve_tab(self):
+        label = tk.Label(self.reserve_tab, text="Select a golf cart and enter reservation details:")
+        label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Widgets for Reserve a Cart tab
+        self.cart_listbox = tk.Listbox(self.reserve_tab, selectmode=tk.SINGLE)
+        self.cart_listbox.grid(row=1, column=0, pady=5, padx=10, sticky=tk.W)
+
+        self.load_cart_list()
+
+        tk.Label(self.reserve_tab, text="Start Time & Date:").grid(row=2, column=0, pady=5, padx=10, sticky=tk.W)
+        self.start_entry = tk.Entry(self.reserve_tab)
+        self.start_entry.grid(row=2, column=1, pady=5, padx=10, sticky=tk.W)
+
+        tk.Label(self.reserve_tab, text="End Time & Date:").grid(row=3, column=0, pady=5, padx=10, sticky=tk.W)
+        self.end_entry = tk.Entry(self.reserve_tab)
+        self.end_entry.grid(row=3, column=1, pady=5, padx=10, sticky=tk.W)
+
+        reserve_button = tk.Button(self.reserve_tab, text="Reserve", command=self.reserve_cart)
+        reserve_button.grid(row=4, column=0, pady=10, padx=10, sticky=tk.W)
+
+        logout_button = tk.Button(self.reserve_tab, text="Logout", command=self.userWindow.destroy)
+        logout_button.grid(row=4, column=1, pady=10, padx=10, sticky=tk.W)
+
+    def setup_view_tab(self):
+        label = tk.Label(self.view_tab, text="View your active reservations:")
+        label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Widgets for View my Reservations tab
+        self.reservations_listbox = tk.Listbox(self.view_tab)
+        self.reservations_listbox.grid(row=1, column=0, pady=5, padx=10, columnspan=2, sticky=tk.W)
+
+        show_button = tk.Button(self.view_tab, text="Show Reservations", command=self.view_reservations)
+        show_button.grid(row=2, column=0, pady=10, padx=10, sticky=tk.W)
+
+        logout_button = tk.Button(self.view_tab, text="Logout", command=self.userWindow.destroy)
+        logout_button.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
+
+    def load_cart_list(self):
+        # Dummy data for cart list, replace with actual data
+        carts = ["Cart 001 gate1", "Cart 002 gate 2", "Cart 003 gate 4"]
+        for cart in carts:
+            self.cart_listbox.insert(tk.END, cart)
+
+    def reserve_cart(self):
+        selected_cart = self.cart_listbox.get(tk.ACTIVE)
+        start_time = self.start_entry.get()
+        end_time = self.end_entry.get()
+
+        # Placeholder logic, replace with actual reservation logic
+        if not selected_cart or not start_time or not end_time:
+            messagebox.showerror("Error", "Please fill in all fields.")
+        else:
+            # Check reservation time validity based on user class
+            user_class = self.get_user_class(self.userid)
+            if not self.validate_reservation_time(user_class, start_time, end_time):
+                messagebox.showerror("Error", "Invalid reservation time.")
+                return
+
+            # Placeholder: Check availability and reserve the cart
+            if self.check_cart_availability(selected_cart, start_time, end_time):
+                self.reservations.append({
+                    "cart": selected_cart,
+                    "start_time": start_time,
+                    "end_time": end_time
+                })
+                messagebox.showinfo("Success", "Cart reserved successfully.")
+            else:
+                messagebox.showerror("Error", "Cart is not available during the specified time.")
+
+    def validate_reservation_time(self, user_class, start_time, end_time):
+        # Placeholder: Validate reservation time based on user class
+        # Replace with actual logic
+        reservation_duration = datetime.strptime(end_time, "%Y-%m-%d %H:%M") - datetime.strptime(start_time,
+                                                                                                 "%Y-%m-%d %H:%M")
+
+        if user_class == "student" and reservation_duration > timedelta(minutes=30):
+            messagebox.showerror("Error", "Reservation duration cannot exceed 30 minutes for students.")
+            return False
+        elif user_class == "employee" and reservation_duration > timedelta(hours=1):
+            messagebox.showerror("Error", "Reservation duration cannot exceed 1 hour for employees.")
+            return False
+        elif user_class == "faculty" and reservation_duration > timedelta(hours=1, minutes=30):
+            messagebox.showerror("Error", "Reservation duration cannot exceed 1 hour and 30 minutes for faculty.")
+            return False
+
+        return True
+
+    def check_cart_availability(self, cart, start_time, end_time):
+        # Placeholder: Check cart availability
+        # Replace with actual logic
+        return True
+
+    def view_reservations(self):
+        self.reservations_listbox.delete(0, tk.END)
+        for reservation in self.reservations:
+            self.reservations_listbox.insert(tk.END,
+                                             f"{reservation['cart']} - {reservation['start_time']} to {reservation['end_time']}")
+    def get_user_class(self, user_id):
+        # Placeholder: Determine user class based on user ID
+        # Replace this with your actual logic
+        if len(user_id) == 10:
+            return "student"
+        elif len(user_id) == 6:
+            return "faculty"
+        else:
+            return "employee"
 
 
 #to see the test
@@ -341,3 +481,4 @@ print(c.fetchall())
 gui=GUI()
 conn.commit()
 conn.close()
+
