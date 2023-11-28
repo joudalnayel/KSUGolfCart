@@ -253,6 +253,8 @@ class GUI:
                 temp = True
         if temp !=True :
             messagebox.showinfo("Error", "Invalid password ")
+            self.root.mainloop()
+
 
     def submita(self):
         self.root.destroy()
@@ -276,7 +278,7 @@ class GUI:
         self.college_entry.configure(width=15)
         self.college_entry.pack()
 
-        submit_button = tk.Button(frame1, text="Submit", command=self.submittt)
+        submit_button = tk.Button(frame1, text="Submit", command=self.create)
         submit_button.pack()
 
         logout_button = tk.Button(frame1, text="Logout", command=self.logout)
@@ -289,7 +291,7 @@ class GUI:
 
         self.root.mainloop()
 
-    def submittt(self):
+    def create(self):
         # plate_number = plate_entry.get()
         # college = college_entry.get()
         # Send information to the central database
@@ -317,6 +319,12 @@ class GUI:
         csvwiter.writerow(fields.split(","))
         for row in cursor:
             csvwiter.writerow(row)
+
+        cursor2 = conn.execute("SELECT * from GulfCarts")
+        fields = "plate_number,college"
+        csvwiter.writerow(fields.split(","))
+        for row in cursor2:
+            csvwiter.writerow(row)
         print("Backing up data to CSV file")
 
     def user(self):
@@ -333,4 +341,3 @@ print(c.fetchall())
 gui=GUI()
 conn.commit()
 conn.close()
-
