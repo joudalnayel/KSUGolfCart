@@ -9,7 +9,10 @@ from datetime import datetime, timedelta
 import datetime
 import logging
 from datetime import datetime
-
+logging.basicConfig(filename='KSUGolfCarts.log',
+                   filemode='w',
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                   level=logging.DEBUG)
 
 #dataBase:
 KSUdb = sqlite3.connect('KSUGolfCarts.db')
@@ -39,7 +42,7 @@ KSUdb.execute('''
         StartTime     CHAR(10)         NOT NULL,
         EndDate       CHAR(10)         NOT NULL,
         EndTime       CHAR(10)         NOT NULL,
-        PRIMARY KEY (UserID, StartDate, StartTime)
+        PRIMARY KEY ( StartDate, StartTime)
     );
 ''')
 KSUdb.commit()
@@ -72,6 +75,7 @@ class GUI:
         self.root.geometry('500x600')
         self.root.configure(bg="light blue")
         tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
@@ -237,12 +241,12 @@ class GUI:
         self.validId()# to check validity id
         self.validPass()  # to check validity pass
         id1 = str(self.entry_1L.get())
+        if id1=='123456':
+            self.admin()
         countid = 0
         for x in id1:
             countid += 1
-        if countid == 6: #go to admin window
-            self.submita()
-        elif countid == 10:#go to user window
+        if countid == 6 or countid == 10: #go to admin window
             self.user(id1)
 
     # validate ID (done)
@@ -271,13 +275,13 @@ class GUI:
             messagebox.showinfo("Error", "Invalid password ")
             self.root.mainloop()
 
-
-    def submita(self):
+    def admin(self):
         self.root.destroy()
         self.root = tk.Tk()
         self.root.title("KSU Golf Carts System")
         self.root.geometry('500x500')
         self.root.configure(bg='light blue')
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         frame1 = tk.Frame(self.root)
         frame1.place(x=90, y=6)
@@ -350,6 +354,7 @@ class GUI:
         self.userWindow = tk.Tk()
         self.userWindow.title("User Window")
         self.userWindow.configure(bg='light blue')
+        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         self.notebook = ttk.Notebook(self.userWindow)
         self.reserve_tab = ttk.Frame(self.notebook)
@@ -385,7 +390,7 @@ class GUI:
         reserve_button = tk.Button(self.reserve_tab, text="Reserve", command=self.reserve_cart)
         reserve_button.grid(row=4, column=0, pady=10, padx=10, sticky=tk.W)
 
-        logout_button = tk.Button(self.reserve_tab, text="Logout", command=self.userWindow.destroy)
+        logout_button = tk.Button(self.reserve_tab, text="Logout", command=self.logout2)
         logout_button.grid(row=4, column=1, pady=10, padx=10, sticky=tk.W)
 
     def setup_view_tab(self):
@@ -399,9 +404,8 @@ class GUI:
         show_button = tk.Button(self.view_tab, text="Show Reservations", command=self.view_reservations)
         show_button.grid(row=2, column=0, pady=10, padx=10, sticky=tk.W)
 
-        logout_button = tk.Button(self.view_tab, text="Logout", command=self.userWindow.destroy)
+        logout_button = tk.Button(self.view_tab, text="Logout", command=self.logout2)
         logout_button.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
-
 
     def load_cart_list(self):
 
@@ -417,7 +421,6 @@ class GUI:
         for cart in carts:
             self.cart_listbox.insert(tk.END, cart)
 
-
     def reserve_cart(self):
         selected_cart = self.cart_listbox.get(tk.ACTIVE)
         start_time = self.start_entry.get()
@@ -427,11 +430,14 @@ class GUI:
         # Placeholder logic, replace with actual reservation logic
         if not selected_cart or not start_time or not end_time:
             messagebox.showerror("Error", "Please fill in all fields.")
+            logging.info(
+                f'{self.userid} {selected_cart} {start_time} {end_time} did not fill in all fields.')
         else:
             # Check reservation time validity based on user class
             user_class = self.get_user_class(self.userid)
             if not self.validate_reservation_time(user_class, start_time, end_time):
-                messagebox.showerror("Error", "Invalid reservation time.")
+                logging.info(
+                f'{self.userid} {selected_cart} {start_time} {end_time} fill')
                 return
 
             # Placeholder: Check availability and reserve the cart
@@ -442,6 +448,7 @@ class GUI:
                     "end_time": end_time
                 })
                 messagebox.showinfo("Success", "Cart reserved successfully.")
+                logging.info(f'{self.userid} {selected_cart} {start_time} {end_time} Cart reserved successfully.')
 
 
                 # Convert date strings to datetime objects
@@ -460,6 +467,7 @@ class GUI:
 
             else:
                 messagebox.showerror("Error", "Cart is not available during the specified time.")
+                logging.info(f'{self.userid} {selected_cart} {start_time} {end_time} not available during the specified time.')
 
     def validate_reservation_time(self, user_class, start_time, end_time):
         # Placeholder: Validate reservation time based on user class
@@ -515,7 +523,6 @@ class GUI:
             finally:
                 conn.close()
 
-
     def view_reservations(self):
         self.reservations_listbox.delete(0, tk.END)
         for reservation in self.reservations:
@@ -531,6 +538,9 @@ class GUI:
         else:
             return "employee"
 
+    def logout2(self):
+        self.userWindow.destroy()
+        self.Signup()
 
 #to see the test
 conn = sqlite3.connect('KSUGolfCarts.db')
@@ -541,6 +551,7 @@ c.execute("Select * from GulfCarts")
 print(c.fetchall())
 c.execute("Select * from Reservations")
 print(c.fetchall())
+conn.commit()
 gui=GUI()
 conn.commit()
 conn.close()
