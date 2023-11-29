@@ -75,7 +75,7 @@ class GUI:
         self.root.geometry('500x600')
         self.root.configure(bg="light blue")
         tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.root.iconphoto(False, tk.PhotoImage(file='logo .png'))
 
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
@@ -218,7 +218,7 @@ class GUI:
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
         self.root.configure(bg="light blue")
-        self.root.iconphoto(False,tk.PhotoImage(file='logo2'))
+        self.root.iconphoto(False,tk.PhotoImage(file='logo .png'))
 
         self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -281,7 +281,7 @@ class GUI:
         self.root.title("KSU Golf Carts System")
         self.root.geometry('500x500')
         self.root.configure(bg='light blue')
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.root.iconphoto(False, tk.PhotoImage(file='logo .png'))
 
         frame1 = tk.Frame(self.root)
         frame1.place(x=90, y=6)
@@ -298,7 +298,7 @@ class GUI:
         self.college_entry.configure(width=15)
         self.college_entry.pack()
 
-        submit_button = tk.Button(frame1, text="Submit", command=self.create)
+        submit_button = tk.Button(frame1, text="Create", command=self.create)
         submit_button.pack()
 
         logout_button = tk.Button(frame1, text="Logout", command=self.logout)
@@ -312,8 +312,6 @@ class GUI:
         self.root.mainloop()
 
     def create(self):
-        # plate_number = plate_entry.get()
-        # college = college_entry.get()
         # Send information to the central database
         plate_number = self.plate_entry.get()
         college = str(self.college_entry.get())
@@ -333,16 +331,26 @@ class GUI:
         conn = sqlite3.connect('KSUGolfCarts.db')
         file = open('GulfCartDB.csv', "w", newline="")
         csvwiter = csv.writer(file)
+
+        # backing up user's information
         cursor = conn.execute("SELECT * from PERSON")
         fields = "First_Name,Last_Name,Class,ID,Password,Email,Phone_Number"
         csvwiter.writerow(fields.split(","))
         for row in cursor:
             csvwiter.writerow(row)
 
+        # backing up gulf carts information
         cursor2 = conn.execute("SELECT * from GulfCarts")
         fields = "plate_number,college"
         csvwiter.writerow(fields.split(","))
         for row in cursor2:
+            csvwiter.writerow(row)
+
+        # backing up Reservations information
+        cursor3 = conn.execute("SELECT * from Reservations")
+        fields = "UserID,Cart,StartDate,StartTime,EndDate,EndTime"
+        csvwiter.writerow(fields.split(","))
+        for row in cursor3:
             csvwiter.writerow(row)
         print("Backing up data to CSV file")
 
@@ -354,7 +362,7 @@ class GUI:
         self.userWindow = tk.Tk()
         self.userWindow.title("User Window")
         self.userWindow.configure(bg='light blue')
-        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo .png'))
 
         self.notebook = ttk.Notebook(self.userWindow)
         self.reserve_tab = ttk.Frame(self.notebook)
