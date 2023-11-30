@@ -38,17 +38,15 @@ KSUdb.execute('''
     CREATE TABLE IF NOT EXISTS Reservations (
         UserID        CHAR(10)     NOT NULL,
         Cart          CHAR(20)     NOT NULL,
-        StartDate     CHAR(10)         NOT NULL,
-        StartTime     CHAR(10)         NOT NULL,
-        EndDate       CHAR(10)         NOT NULL,
-        EndTime       CHAR(10)         NOT NULL,
-        PRIMARY KEY ( StartDate, StartTime)
+        StartDate     DATETIME         NOT NULL,
+        EndDate       DATETIME         NOT NULL,
+        PRIMARY KEY ( StartDate, EndDate)
     );
 ''')
 KSUdb.commit()
 FirstName_admin = 'Areej'
 LastName_Admin = 'Saad'
-AdminClass='Employee'
+AdminClass='Admin'
 ID_Admin = '123456'
 Password = '000qqq'
 password = hashlib.sha256(Password.encode()).hexdigest()
@@ -75,7 +73,7 @@ class GUI:
         self.root.geometry('500x600')
         self.root.configure(bg="light blue")
         tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
-        self.root.iconphoto(False, tk.PhotoImage(file='logo .png'))
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
@@ -218,7 +216,7 @@ class GUI:
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
         self.root.configure(bg="light blue")
-        self.root.iconphoto(False,tk.PhotoImage(file='logo .png'))
+        self.root.iconphoto(False,tk.PhotoImage(file='logo2'))
 
         self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -281,7 +279,7 @@ class GUI:
         self.root.title("KSU Golf Carts System")
         self.root.geometry('500x500')
         self.root.configure(bg='light blue')
-        self.root.iconphoto(False, tk.PhotoImage(file='logo .png'))
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         frame1 = tk.Frame(self.root)
         frame1.place(x=90, y=6)
@@ -312,6 +310,8 @@ class GUI:
         self.root.mainloop()
 
     def create(self):
+        # plate_number = plate_entry.get()
+        # college = college_entry.get()
         # Send information to the central database
         plate_number = self.plate_entry.get()
         college = str(self.college_entry.get())
@@ -328,30 +328,28 @@ class GUI:
 
     def backup(self):
         # Backup all information of the central database into a CSV file format
+        # backing up user's information
         conn = sqlite3.connect('KSUGolfCarts.db')
         file = open('GulfCartDB.csv', "w", newline="")
         csvwiter = csv.writer(file)
-
-        # backing up user's information
         cursor = conn.execute("SELECT * from PERSON")
         fields = "First_Name,Last_Name,Class,ID,Password,Email,Phone_Number"
         csvwiter.writerow(fields.split(","))
         for row in cursor:
             csvwiter.writerow(row)
-
         # backing up gulf carts information
         cursor2 = conn.execute("SELECT * from GulfCarts")
         fields = "plate_number,college"
         csvwiter.writerow(fields.split(","))
         for row in cursor2:
             csvwiter.writerow(row)
-
         # backing up Reservations information
         cursor3 = conn.execute("SELECT * from Reservations")
-        fields = "UserID,Cart,StartDate,StartTime,EndDate,EndTime"
+        fields = "UserID,Cart,StartDate,EndDate"
         csvwiter.writerow(fields.split(","))
         for row in cursor3:
             csvwiter.writerow(row)
+
         print("Backing up data to CSV file")
 
     def user(self, userid):
@@ -362,7 +360,7 @@ class GUI:
         self.userWindow = tk.Tk()
         self.userWindow.title("User Window")
         self.userWindow.configure(bg='light blue')
-        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo .png'))
+        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo2'))
 
         self.notebook = ttk.Notebook(self.userWindow)
         self.reserve_tab = ttk.Frame(self.notebook)
@@ -464,14 +462,16 @@ class GUI:
                 end_datetime = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
                 entry_1d=str(self.userid)
 
-                # Now you can use start_datetime and end_datetime in your SQL query
+                #  start_datetime and end_datetime in your SQL query
+                conn = sqlite3.connect('KSUGolfCarts.db')
+                c = conn.cursor()
+                print(entry_1d, selected_cart, start_datetime, end_datetime)
                 with KSUdb:
                     KSUdb.execute(
-                        "INSERT OR IGNORE INTO Reservations (UserID, Cart, StartDate, StartTime, EndDate, EndTime) VALUES(?,?,?,?,?,?)",
-                        (
-                        entry_1d, selected_cart, str(start_datetime.date()), str(start_datetime.time()), str(end_datetime.date()),
-                        str(end_datetime.time()))
+                        "INSERT OR IGNORE INTO Reservations (UserID, Cart, StartDate, EndDate) VALUES(?,?,?,?)",
+                        (entry_1d, selected_cart, start_datetime, end_datetime)
                     )
+                conn.commit()
 
             else:
                 messagebox.showerror("Error", "Cart is not available during the specified time.")
@@ -512,8 +512,8 @@ class GUI:
                                 OR (StartDate <= ? AND EndDate >= ?)
                                 OR (StartDate >= ? AND StartDate <= ? AND EndDate >= ?)
                             )
-                                ''', (cart, str(start_datetime.date()), str(start_datetime.time()), str(end_datetime.date()),str(end_datetime.time()), str(start_datetime.date()),  # StartDate
-                                    str(end_datetime.date()),str(start_datetime.time()),  # EndDate
+                                ''', (cart, start_datetime, start_datetime, end_datetime,end_datetime, start_datetime,  # StartDate
+                                    end_datetime,start_datetime,  # EndDate
                                          ))
 
                 reservations = c.fetchall()
@@ -539,12 +539,23 @@ class GUI:
     def get_user_class(self, user_id):
         # Placeholder: Determine user class based on user ID
         # Replace this with your actual logic
-        if len(user_id) == 10:
-            return "student"
-        elif len(user_id) == 6:
-            return "faculty"
-        else:
-            return "employee"
+        conn = sqlite3.connect('KSUGolfCarts.db')
+        c = conn.cursor()
+        check = c.execute('SELECT user_class FROM PERSON WHERE SID_Number = ?', (user_id,))
+        user_class = check.fetchone()
+        conn.close()  # Close the connection after fetching results
+
+        if user_class:
+            user_class = user_class[0].lower()  # Convert to lowercase for case-insensitive comparison
+            if user_class == "student":
+                print("Student")
+                return "student"
+            elif user_class == "faculty":
+                print("Faculty")
+                return "faculty"
+            elif user_class == "employee":
+                print("Employee")
+                return "employee"
 
     def logout2(self):
         self.userWindow.destroy()
