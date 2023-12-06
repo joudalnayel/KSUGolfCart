@@ -10,7 +10,7 @@ import datetime
 import logging
 from datetime import datetime
 logging.basicConfig(filename='KSUGolfCarts.log',
-                   filemode='w',
+                   filemode='a',
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                    level=logging.DEBUG)
 
@@ -44,6 +44,8 @@ KSUdb.execute('''
         PRIMARY KEY ( StartDate, EndDate)
     );
 ''')
+conn = sqlite3.connect('KSUGolfCarts.db')
+c = conn.cursor()
 KSUdb.commit()
 # admin info
 FirstName_admin = 'Areej'
@@ -60,6 +62,7 @@ with KSUdb:
                   (FirstName_admin, LastName_Admin, AdminClass, ID_Admin, password, Email, Phone_Number))
 
 KSUdb.commit()
+
 #gui
 class GUI:
     def __init__(self):
@@ -72,11 +75,11 @@ class GUI:
     # SignUp window
     def Signup(self):
         self.root = tk.Tk()
-        self.root.title("KSU GolfCartsn System")
+        self.root.title("KSU Golf Carts System")
         self.root.geometry('500x600')
         self.root.configure(bg="light blue")
-        tk.Label(self.root, text="Welcom to ksu Golf Cartsn system!")
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+        tk.Label(self.root, text="Welcom to ksu Golf Carts system!")
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2.png'))
 
         # Sign up label
         self.label_0 = tk.Label(self.root, text="Sign up ", width=20, font=("bold", 20))
@@ -85,12 +88,12 @@ class GUI:
         self.label_1 = tk.Label(self.root, text="First Name:", width=20, font=("bold", 10))
         self.label_1.place(x=90, y=130)
         self.entry_1 = tk.Entry(self.root)
-        self.entry_1.place(x=240, y=130)
+        self.entry_1.place(x=260, y=130)
         # Last name label
         self.label_2 = tk.Label(self.root, text="Last Name", width=20, font=("bold", 10))
         self.label_2.place(x=90, y=180)
         self.entry_2 = tk.Entry(self.root)
-        self.entry_2.place(x=240, y=180)
+        self.entry_2.place(x=260, y=180)
         # User class
         self.labelFS = tk.Label(self.root, text="Your Class", width=20, font=("bold", 10))
         self.labelFS.place(x=90, y=230)
@@ -98,27 +101,27 @@ class GUI:
         self.selected_class = tk.StringVar()
         self.cbs = ttk.Combobox(self.root, textvariable=self.selected_class, width=17)
         self.cbs['values'] = Class
-        self.cbs.place(x=240, y=230)
+        self.cbs.place(x=260, y=230)
         # ID label
         self.label_6 = tk.Label(self.root, text="ID:", width=20, font=("bold", 10))
         self.label_6.place(x=90, y=280)
         self.entry_3 = tk.Entry(self.root)
-        self.entry_3.place(x=240, y=280)
+        self.entry_3.place(x=260, y=280)
         # Password label
         self.label_4 = tk.Label(self.root, text="Password:", width=20, font=("bold", 10))
         self.label_4.place(x=90, y=330)
         self.entry_4 = tk.Entry(self.root)
-        self.entry_4.place(x=240, y=330)
+        self.entry_4.place(x=260, y=330)
         # Email label
         self.label_5 = tk.Label(self.root, text="Email address:", width=20, font=("bold", 10))
         self.label_5.place(x=90, y=380)
         self.entry_5 = tk.Entry(self.root)
-        self.entry_5.place(x=240, y=380)
+        self.entry_5.place(x=260, y=380)
         # Phone number label
         self.label_6 = tk.Label(self.root, text="Phone number:", width=20, font=("bold", 10))
         self.label_6.place(x=90, y=420)
         self.entry_6 = tk.Entry(self.root)
-        self.entry_6.place(x=240, y=420)
+        self.entry_6.place(x=260, y=420)
         # Submit button
         self.SubmetButton = tk.Button(self.root, text='Submit', width=20, bg='brown', fg='white',
                                       command=self.Submit).place(x=180, y=450)
@@ -144,9 +147,26 @@ class GUI:
                 password = ''
                 messagebox.showinfo("password format error!",
                                     "Re-enter a password number properly\rthat consists at least of 6 digits or letters")
+                return
             # first &last Name
             firstname = str(self.entry_1.get())
+            reg = "^[A-Za-z0-9]{1,100}$"
+            pat = re.compile(reg)
+            x = re.search(pat, firstname)
+            if not x:
+                firstname = ''
+                messagebox.showinfo("first name format error!",
+                                    "Re-enter a first name properly ")
+                return
             lastname = str(self.entry_2.get())
+            reg = "^[A-Za-z0-9]{1,100}$"
+            pat = re.compile(reg)
+            x = re.search(pat, lastname)
+            if not x:
+                lastname = ''
+                messagebox.showinfo("last name format error!",
+                                    "Re-enter a last name properly ")
+                return
             Class = str(self.selected_class.get())
             #selected class
             if self.selected_class.get()=='Student':
@@ -159,17 +179,22 @@ class GUI:
                 if not x:
                     ID = ''
                     messagebox.showinfo("ID Number error!", "Re-enter an ID number properly\rthat consists of 10 digits")
-            else:
+                    return
+            elif self.selected_class.get()=='Faculty'or self.selected_class.get()=='Employee':
                 # 'Faculty', 'Employee' id
                 ID = str(self.entry_3.get())
                 reg = "^[0-9]{6}$"
                 pat = re.compile(reg)
                 x = re.search(pat, ID)
-                # validate ID
                 if not x:
                     ID = ''
                     messagebox.showinfo("ID Number error!",
                                         "Re-enter an ID number properly\rthat consists of 6 digits")
+                    return
+            else:
+                messagebox.showinfo("Class type empty!", "please choose your class")
+
+
 
             # validate phone
             phoneNum = str(self.entry_6.get())
@@ -180,6 +205,7 @@ class GUI:
                 phoneNum = ''
                 messagebox.showinfo("Phone Number error!", "Re-enter an phone number properly\rthat "
                                                            "consists of 10 digits and starts with \'05\'")
+                return
                 # validate email
             email = str(self.entry_5.get())
             reg = "^([a-zA-Z0-9\._-]+){8}(@ksu\.edu\.sa)$"
@@ -189,6 +215,7 @@ class GUI:
                 email = ''
                 messagebox.showinfo("Email  error!", "Re-enter Email properly\rthat "
                                                      "it should xxxxxxxx@ksu.edu.sa ")
+                return
             # insert,Check for doublaction
             found_id = c.execute(f"SELECT SID_Number FROM PERSON WHERE SID_Number = {ID}")
             password= hashlib.sha256(password.encode()).hexdigest()
@@ -221,7 +248,7 @@ class GUI:
         self.root.geometry('500x500')
         self.root.title("KSU GolfLogin System")
         self.root.configure(bg="light blue")
-        self.root.iconphoto(False,tk.PhotoImage(file='logo2'))
+        self.root.iconphoto(False,tk.PhotoImage(file='logo2.png'))
 
         self.label_0 = tk.Label(self.root, text="log in ", width=20, font=("bold", 20))
         self.label_0.place(x=90, y=53)
@@ -229,12 +256,12 @@ class GUI:
         self.label_1L = tk.Label(self.root, text="ID :", width=20, font=("bold", 10))
         self.label_1L.place(x=90, y=130)
         self.entry_1L = tk.Entry(self.root)
-        self.entry_1L.place(x=240, y=130)
+        self.entry_1L.place(x=260, y=130)
 
         self.label_2P = tk.Label(self.root, text="Password :", width=20, font=("bold", 10))
         self.label_2P.place(x=90, y=180)
         self.entry_2P = tk.Entry(self.root,show='*')
-        self.entry_2P.place(x=240, y=180)
+        self.entry_2P.place(x=260, y=180)
 
         login = tk.Button(self.root, text="log in", command=self.logintodb)
         login.place(x=240, y=300)
@@ -289,7 +316,7 @@ class GUI:
         self.root.title("KSU Golf Carts System")
         self.root.geometry('500x500')
         self.root.configure(bg='light blue')
-        self.root.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.root.iconphoto(False, tk.PhotoImage(file='logo2.png'))
 
         frame1 = tk.Frame(self.root)
         frame1.place(x=90, y=6)
@@ -320,8 +347,25 @@ class GUI:
         self.root.mainloop()
     #create Button
     def create(self):
-        plate_number = self.plate_entry.get()
+        plate_number = str(self.plate_entry.get())
+        reg = "^(?=.*[0-9])[A-Za-z0-9]{1,100}$"
+        pat = re.compile(reg)
+        x = re.search(pat, plate_number)
+        if not x:
+            plate_number = ''
+            messagebox.showinfo("plate number format error!",
+                                "Re-enter a plate number properly")
+            return
+
         college = str(self.college_entry.get())
+        reg = "^[A-Za-z]+$"
+        pat = re.compile(reg)
+        x = re.search(pat, college)
+        if not x:
+            college = ''
+            messagebox.showinfo("college format error!",
+                                "Re-enter a college properly ")
+            return
         # Send information to the central database
         with KSUdb:
             KSUdb.execute(
@@ -370,7 +414,7 @@ class GUI:
 
         self.userWindow = tk.Tk()
         self.userWindow.title("User Window")
-        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo2'))
+        self.userWindow.iconphoto(False, tk.PhotoImage(file='logo2.png'))
 
         self.notebook = ttk.Notebook(self.userWindow)# to manage many tabs
         self.reserve_tab = ttk.Frame(self.notebook)#reserve_tab
@@ -585,8 +629,7 @@ class GUI:
         self.Signup()
 
 #to see the test
-conn = sqlite3.connect('KSUGolfCarts.db')
-c = conn.cursor()
+
 c.execute("Select * from PERSON")
 print(c.fetchall())
 c.execute("Select * from GulfCarts")
@@ -597,4 +640,3 @@ conn.commit()
 gui=GUI()
 conn.commit()
 conn.close()
-
